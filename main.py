@@ -1,14 +1,8 @@
-# import bs4
 from fastapi import FastAPI
 import uvicorn
-# from langchain_community.llms import Ollama
+from services.loader import load_pdf_documents
 from langchain_ollama import ChatOllama
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.document_loaders import WebBaseLoader, PyMuPDFLoader
 import faiss
-# from langchain_community.docstore.in_memory import InMemoryDocstore
-from langchain_community.vectorstores import FAISS
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_core.output_parsers import StrOutputParser
@@ -17,52 +11,23 @@ from langserve import add_routes
 app = FastAPI(
     title="Chatbot RAG Server",
     version="1.0",
-    description="Chatbot RAG usando LangChain, Ollama y FastAPI",
+    description="Chatbot RAG usando LangChain",
 )
 
 # 1. CARGA DE DATOS
 print("Cargando base de conocimiento...")
+pdf_docs = load_pdf_documents("corpus")
 
-# bs4_strainer = bs4.SoupStrainer(class_=("post-title", "post-header", "post-content"))
-# web_loader = WebBaseLoader(
-#     web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
-#     bs_kwargs={"parse_only": bs4_strainer},
-# )
-# web_docs = web_loader.load()
-
-pdf_loader_1 = PyMuPDFLoader("corpus\catalogo.pdf")
-pdf_loader_2 = PyMuPDFLoader("corpus\manual-de-marca.pdf")
-pdf_docs_1 = pdf_loader_1.load()
-pdf_docs_2 = pdf_loader_2.load()
-
-all_docs = pdf_docs_1 + pdf_docs_2
+all_docs = pdf_docs
 print(f"Total de páginas cargadas: {len(all_docs)}")
 
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000, 
-    chunk_overlap=200,
-    add_start_index=True
-)
-all_splits = text_splitter.split_documents(all_docs)
-print(f"Corpus splitteado en {len(all_splits)} sub-documentos.")
+
 
 # 2. EMBEDDINGS
 print("Creando embeddings...")
 
-embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2") 
-
-# embedding_dim = len(embeddings.embed_documents(all_splits)[0])
-# index = faiss.IndexFlatL2(embedding_dim)
-
-# vector_store = FAISS(
-#     embedding_function=embeddings,
-#     index=index,
-#     docstore=InMemoryDocstore(),
-#     index_to_docstore_id={},
-# )
-
 print("Indexando chunks...")
-vector_store = FAISS.from_documents(documents=all_splits, embedding=embeddings)
+
 print("Embeddings creados.")
 
 print("Configurando cadena RAG...")
@@ -89,7 +54,7 @@ llm = ChatOllama(
 
 # 5. RAG CHAIN
 system_template = """Eres un Asistente Virtual experto de la mueblería "Hermanos Jota". 
-Tu trabajo es responder preguntas sobre la mueblería de manera profesional y comercial.
+Tu trabajo es responder en español a preguntas sobre la mueblería de manera profesional y comercial.
 
 Instrucciones:
 1. Usa SOLO el contexto proporcionado abajo para responder. No inventes información.

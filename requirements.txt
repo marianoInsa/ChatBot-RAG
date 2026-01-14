@@ -1,11 +1,20 @@
 langchain
-langchain-community
-langchain-ollama
 langchain-core
+langchain-community
+
+langchain-ollama
+langchain-groq
 langchain-huggingface
+
 faiss-cpu
-langserve
+
 fastapi
 uvicorn
+langserve
+
 pypdf
+
+# Configuramos la descarga de Torch como CPU only
+# Esto es para evitarnos la descarga de CUDA
+torch @ https://download.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp313-cp313-manylinux_2_28_x86_64.whl
 sentence-transformers
