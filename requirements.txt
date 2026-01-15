@@ -13,6 +13,7 @@ uvicorn
 langserve
 
 pypdf
+pymupdf
 
 # Configuramos la descarga de Torch como CPU only
 # Esto es para evitarnos la descarga de CUDA

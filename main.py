@@ -14,24 +14,6 @@ app = FastAPI(
     description="Chatbot RAG usando LangChain",
 )
 
-# 1. CARGA DE DATOS
-print("Cargando base de conocimiento...")
-pdf_docs = load_pdf_documents("corpus")
-
-all_docs = pdf_docs
-print(f"Total de páginas cargadas: {len(all_docs)}")
-
-
-
-# 2. EMBEDDINGS
-print("Creando embeddings...")
-
-print("Indexando chunks...")
-
-print("Embeddings creados.")
-
-print("Configurando cadena RAG...")
-
 # 3. CONFIG DEL RETRIEVER
 retriever = vector_store.as_retriever(
     search_type="mmr", # Maximal Marginal Relevance
