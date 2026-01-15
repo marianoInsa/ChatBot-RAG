@@ -1,7 +1,7 @@
 from typing import List
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from loader import load_documents
+from services.loader import load_documents
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from uuid import uuid4
@@ -66,7 +66,8 @@ class DataIngestionService:
         embeddings = self.get_embeddings_instance()
         return FAISS.load_local(
             self.persist_path,
-            embeddings
+            embeddings,
+            allow_dangerous_deserialization=True
         )
     
 if __name__ == "__main__":

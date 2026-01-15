@@ -1,18 +1,33 @@
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI
 import uvicorn
-from services.loader import load_pdf_documents
-from langchain_ollama import ChatOllama
-import faiss
+# from contextlib import asynccontextmanager
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_core.output_parsers import StrOutputParser
 from langserve import add_routes
+# from llms.ollama import llama2
+from llms.groq import groq
+
+from services.data_service import DataIngestionService
+
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     # CARGA DEL VECTOR STORE
+
+#     yield
+#     # LIMPIEZA FINAL
 
 app = FastAPI(
     title="Chatbot RAG Server",
     version="1.0",
     description="Chatbot RAG usando LangChain",
+    # lifespan=lifespan
 )
+
+data_service = DataIngestionService(source="corpus")
+vector_store = data_service.load_vector_store()
 
 # 3. CONFIG DEL RETRIEVER
 retriever = vector_store.as_retriever(
@@ -25,14 +40,7 @@ retriever = vector_store.as_retriever(
 )
 
 # 4. MODELO LLM (Ollama)
-llm = ChatOllama(
-    model="llama2",
-    validate_model_on_init=True,
-    temperature=0.2, # subirlo lo hace mas creativo
-    # seed=77, # setear una seed hace que las respuestas sean reproducibles
-    num_predict=256,
 
-)
 
 # 5. RAG CHAIN
 system_template = """Eres un Asistente Virtual experto de la mueblería "Hermanos Jota". 
@@ -60,7 +68,7 @@ rag_chain = (
         {"context": retriever | format_docs, "input": RunnablePassthrough()}
     )
     | prompt
-    | llm
+    | groq
     | StrOutputParser()
 )
 
