@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 load_dotenv()
+import logging
 from fastapi import FastAPI
 import uvicorn
 # from contextlib import asynccontextmanager
@@ -11,6 +12,10 @@ from langserve import add_routes
 from llms.groq import groq
 
 from services.data_service import DataIngestionService
+
+# CONFIGURACIÓN DE LOGGER
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # @asynccontextmanager
 # async def lifespan(app: FastAPI):
@@ -26,7 +31,7 @@ app = FastAPI(
     # lifespan=lifespan
 )
 
-data_service = DataIngestionService(source="corpus")
+data_service = DataIngestionService()
 vector_store = data_service.load_vector_store()
 
 # 3. CONFIG DEL RETRIEVER
