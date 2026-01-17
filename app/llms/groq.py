@@ -7,10 +7,6 @@ if "GROQ_API_KEY" not in os.environ:
 
 groq = ChatGroq(
     model="qwen/qwen3-32b",
-    temperature=0,
-    max_tokens=None,
-    reasoning_format="parsed",
-    timeout=None,
-    max_retries=2,
-    # other params...
+    temperature=0.1,
+    max_tokens=1024
 )

@@ -19,6 +19,9 @@ class Settings(BaseSettings):
         "https://hermanos-jota-flame.vercel.app/contacto"
     ]
     file_path: Path = BASE_DIR / "corpus"
+    mmr_k: int = 5
+    mmr_fetch_k: int = 20
+    mmr_lambda_mult: float = 0.5
 
     model_config = SettingsConfigDict(
         env_file = ".env"
