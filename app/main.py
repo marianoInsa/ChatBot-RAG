@@ -9,9 +9,9 @@ from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_core.output_parsers import StrOutputParser
 from langserve import add_routes
 # from llms.ollama import llama2
-from llms.groq import groq
+from app.llms.groq import groq
 
-from services.data_service import DataIngestionService
+from app.services.data_service import DataIngestionService
 
 # CONFIGURACIÓN DE LOGGER
 logging.basicConfig(level=logging.INFO)
