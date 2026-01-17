@@ -26,21 +26,22 @@ class DataIngestionService:
 
     def load_and_chunk(self) -> List[Document]:
         all_docs = load_documents(self.settings.file_path)
-        all_chunks = self._text_splitter.split_documents(all_docs)
-        return all_chunks
+        chunks = self._text_splitter.split_documents(all_docs)
+        return all_docs, chunks
 
     def vectorize(self) -> FAISS:
         # CARGA DE DATOS Y CHUNKING
-        loaded_docs = self.load_and_chunk()
+        loaded_docs, chunks = self.load_and_chunk()
         if not loaded_docs:
             logger.warning("No se cargaron documentos.")
             raise
         logger.info(f"Documentos cargados: {len(loaded_docs)}")
+        logger.info(f"Chunks generados: {len(chunks)}")
         
         # ALMACENAMIENTO
-        ids = [str(uuid4()) for _ in loaded_docs]
+        ids = [str(uuid4()) for _ in chunks]
         self._vector_store = FAISS.from_documents(
-            documents=loaded_docs, 
+            documents=chunks, 
             embedding=self._embeddings,
             ids=ids
         )
@@ -78,7 +79,7 @@ if __name__ == "__main__":
     vector_store = data_service.vectorize()
     print("--- INFORMACION DEL PIPELINE ---")
     print(f"Fuente de datos          : {data_service.settings.file_path}")
-    # print(f"Documentos cargados      : {len(data_service.load_data())}")
+    print(f"Documentos cargados      : {len(data_service.load_and_chunk()[0])}")
     print(f"Chunks generados         : {vector_store.index.ntotal}")
     print(f"Tamaño de chunk          : {data_service.settings.chunk_size}")
     print(f"Overlap de chunk         : {data_service.settings.chunk_overlap}")
