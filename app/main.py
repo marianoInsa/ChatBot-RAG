@@ -5,9 +5,10 @@ from fastapi import FastAPI
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from langserve import add_routes
-# from llms.ollama import llama2
-from app.llms.groq import groq
-from langchain_core.runnables import RunnableLambda
+
+from app.embeddings.factory import get_embeddings
+from app.chat_models.factory import get_chat_model
+
 from app.services.data_service import DataIngestionService
 from app.services.chat_service import ChatService
 
@@ -16,16 +17,21 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # INICIALIZACIÓN DE SERVICIOS
-data_service = DataIngestionService()
-chat_service = ChatService()
-
 try:
+    embeddings = get_embeddings(embeddings="huggingface")
+    if embeddings is None:
+        raise ValueError("Modelo de embeddings no soportado.")
+    data_service = DataIngestionService(embeddings)
     vector_store = data_service.load_vector_store()
-    chat_service.initialize(vector_store, groq)
+
+    chat_model = get_chat_model(chat_model="gemini")
+    if chat_model is None:
+        raise ValueError("Modelo de chat no soportado.")
+    chat_service = ChatService(vector_store, chat_model)
     
     logger.info("Vector store y LLM cargados correctamente en ChatService.")
 except Exception as e:
-    logger.error(f"Error al cargar la app: {e}")
+    logger.error(f"Error al cargar los servicios: {e}")
     raise
 
 app = FastAPI(

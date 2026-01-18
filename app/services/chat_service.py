@@ -2,6 +2,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable, RunnablePassthrough, RunnableParallel
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.retrievers import BaseRetriever
+from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_community.vectorstores import FAISS
 from textwrap import dedent
 import logging
@@ -10,23 +11,18 @@ from app.config.config import get_settings
 logger = logging.getLogger(__name__)
 
 class ChatService:
-    def __init__(self):
+    def __init__(self, vector_store: FAISS, chat_model: BaseChatModel):
         self.settings = get_settings()
-        self.vector_store: FAISS | None = None
+        self.vector_store: FAISS = vector_store
         self.retriever: BaseRetriever | None = None
-        self.llm = None
-        self._chain: Runnable | None = None
-
-    def initialize(self, vector_store, llm):
-        self.vector_store = vector_store
-        self.llm = llm
-        self.retriever = self._build_retriever()
-        self._chain = self._build_chain()
-        logger.info("ChatService inicializado correctamente")
+        self.chat_model: BaseChatModel = chat_model
+        self.retriever: BaseRetriever = self._build_retriever()
+        self._chain: Runnable = self._build_chain()
 
     def _build_retriever(self) -> BaseRetriever:
         if not self.vector_store:
-            raise RuntimeError("Vector store no inicializado correctamente")
+            logger.error("Vector store no inicializado correctamente")
+            raise
         
         return self.vector_store.as_retriever(
             search_type="mmr", # Maximal Marginal Relevance
@@ -64,8 +60,9 @@ class ChatService:
         )
     
     def _build_chain(self) -> Runnable:
-        if not self.retriever or not self.llm:
-            raise RuntimeError("ChatService no inicializado correctamente")
+        if not self.retriever or not self.chat_model:
+            logger.error("ChatService no inicializado correctamente")
+            raise
 
         logger.info("Construyendo cadena RAG...")
 
@@ -75,28 +72,31 @@ class ChatService:
                 "input": RunnablePassthrough()
             })
             | self._build_prompt()
-            | self.llm
+            | self.chat_model
             | StrOutputParser()
         )
     
     def get_chain(self) -> Runnable:
-        if self._chain is None:
-            raise RuntimeError("ChatService no inicializado correctamente")
+        if not self._chain:
+            logger.error("ChatService no inicializado correctamente")
+            raise
 
         return self._chain
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
-    from app.llms.groq import groq
+    from app.chat_models.groq import get_groq
+    from app.chat_models.gemini import get_gemini
     from app.services.data_service import DataIngestionService
+    from app.embeddings.huggingface import hugging_face_embeddings
 
-    data_service = DataIngestionService()
+    data_service = DataIngestionService(hugging_face_embeddings)
     vector_store = data_service.load_vector_store()
 
     chat_service = ChatService(
         vector_store=vector_store, 
-        llm=groq
+        chat_model=get_gemini()
     )
     query = "Hola, que productos venden?"
 

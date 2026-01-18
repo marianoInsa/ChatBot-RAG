@@ -8,10 +8,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 class Settings(BaseSettings):
     groq_api_key: str = os.getenv("GROQ_API_KEY", "")
+    google_api_key: str = os.getenv("GOOGLE_API_KEY", "")
     user_agent: str = os.getenv("USER_AGENT", "ChatBot-RAG")
+    
     chunk_size: int = 1000
     chunk_overlap: int = 200
-    embeddings_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
+    
+    hugging_face_embeddings_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
+    gemini_embeddings_model_name: str = "models/gemini-embedding-001"
+
     persist_path: Path = BASE_DIR / "faiss_index"
     urls: List[str] = [
         "https://hermanos-jota-flame.vercel.app/",
@@ -19,6 +24,7 @@ class Settings(BaseSettings):
         "https://hermanos-jota-flame.vercel.app/contacto"
     ]
     file_path: Path = BASE_DIR / "corpus"
+
     mmr_k: int = 5
     mmr_fetch_k: int = 20
     mmr_lambda_mult: float = 0.5

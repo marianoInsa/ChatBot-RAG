@@ -1,8 +1,8 @@
 from typing import List
 from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from app.loaders.loader import load_documents
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from uuid import uuid4
 import logging
@@ -11,11 +11,9 @@ from app.config.config import get_settings
 logger = logging.getLogger(__name__)
 
 class DataIngestionService:
-    def __init__(self):
+    def __init__(self, embeddings: Embeddings):
         self.settings = get_settings()
-        self._embeddings = HuggingFaceEmbeddings(
-                model_name=self.settings.embeddings_model_name
-            )
+        self._embeddings: Embeddings = embeddings
         self._text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.settings.chunk_size,
             chunk_overlap=self.settings.chunk_overlap,
@@ -75,7 +73,11 @@ class DataIngestionService:
         return self.vectorize()
     
 if __name__ == "__main__":
-    data_service = DataIngestionService()
+    from dotenv import load_dotenv
+    load_dotenv()
+    from app.embeddings.gemini import get_gemini_embeddings
+    embeddings = get_gemini_embeddings()
+    data_service = DataIngestionService(embeddings=embeddings)
     vector_store = data_service.vectorize()
     print("--- INFORMACION DEL PIPELINE ---")
     print(f"Fuente de datos          : {data_service.settings.file_path}")

@@ -5,6 +5,7 @@ langchain-community
 langchain-ollama
 langchain-groq
 langchain-huggingface
+langchain-google-genai
 
 faiss-cpu
 
