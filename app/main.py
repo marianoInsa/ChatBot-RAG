@@ -1,10 +1,13 @@
 from dotenv import load_dotenv
 load_dotenv()
+
 import logging
 from fastapi import FastAPI
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
+
 from langserve import add_routes
+from langchain_core.runnables import RunnableLambda
 
 from app.embeddings.factory import get_embeddings
 from app.chat_models.factory import get_chat_model
@@ -49,9 +52,10 @@ app.add_middleware(
 )
 
 # SERVIDOR LANGSERVE
+rag = RunnableLambda(lambda q: chat_service.chat(q))
 add_routes(
     app,
-    chat_service.get_chain(),
+    rag,
     path="/rag",
 )
 

@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     mmr_fetch_k: int = 20
     mmr_lambda_mult: float = 0.5
 
+    max_context_length: int = 4000
+
     model_config = SettingsConfigDict(
         env_file = ".env"
     )

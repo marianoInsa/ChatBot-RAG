@@ -1,6 +1,6 @@
+from typing import List
+from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import Runnable, RunnablePassthrough, RunnableParallel
-from langchain_core.output_parsers import StrOutputParser
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_community.vectorstores import FAISS
@@ -14,16 +14,11 @@ class ChatService:
     def __init__(self, vector_store: FAISS, chat_model: BaseChatModel):
         self.settings = get_settings()
         self.vector_store: FAISS = vector_store
-        self.retriever: BaseRetriever | None = None
         self.chat_model: BaseChatModel = chat_model
         self.retriever: BaseRetriever = self._build_retriever()
-        self._chain: Runnable = self._build_chain()
+        self.prompt: ChatPromptTemplate = self._build_prompt()
 
     def _build_retriever(self) -> BaseRetriever:
-        if not self.vector_store:
-            logger.error("Vector store no inicializado correctamente")
-            raise
-        
         return self.vector_store.as_retriever(
             search_type="mmr", # Maximal Marginal Relevance
             search_kwargs={
@@ -32,6 +27,11 @@ class ChatService:
                 "lambda_mult": self.settings.mmr_lambda_mult # 0.5 balancea entre similarity vs diversity
             }
         )
+    
+    def retrieve(self, query: str) -> List[Document]:
+        logger.info("Recuperando documentos...")
+        relevant_docs = self.retriever.invoke(query)
+        return relevant_docs
     
     def _build_prompt(self) -> ChatPromptTemplate:
         system_template = dedent("""
@@ -48,40 +48,39 @@ class ChatService:
         {context}
         </context>
 
-        Pregunta del cliente: {input}
+        Pregunta del cliente: {question}
         """)
-        prompt = ChatPromptTemplate.from_template(system_template)
-        return prompt
+        
+        return ChatPromptTemplate.from_template(system_template)
     
     @staticmethod
-    def format_docs(docs) -> str:
+    def format_docs(docs: List[Document]) -> str:
         return "\n\n".join(
             doc.page_content for doc in docs if doc.page_content
         )
     
-    def _build_chain(self) -> Runnable:
-        if not self.retriever or not self.chat_model:
-            logger.error("ChatService no inicializado correctamente")
-            raise
-
-        logger.info("Construyendo cadena RAG...")
-
-        return (
-            RunnableParallel({
-                "context": self.retriever | self.format_docs, 
-                "input": RunnablePassthrough()
-            })
-            | self._build_prompt()
-            | self.chat_model
-            | StrOutputParser()
+    def generate_response(self, question: str, context: str) -> str:
+        messages = self.prompt.format_messages(
+            context=context,
+            question=question
         )
+        response = self.chat_model.invoke(messages)
+        return response.content
     
-    def get_chain(self) -> Runnable:
-        if not self._chain:
-            logger.error("ChatService no inicializado correctamente")
-            raise
+    def chat(self, question: str) -> str:
+        logger.info("Procesando la pregunta...")
+        
+        relevant_docs = self.retrieve(question)
+        if not relevant_docs:
+            return "Lo siento, no tengo información disponible para responder a su pregunta."
+        
+        context = self.format_docs(relevant_docs)
+        if len(context) > self.settings.max_context_length:
+            context = context[: self.settings.max_context_length]
+            logger.info("Contexto truncado a la longitud máxima.")
 
-        return self._chain
+        response = self.generate_response(question, context)
+        return response
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
@@ -96,9 +95,9 @@ if __name__ == "__main__":
 
     chat_service = ChatService(
         vector_store=vector_store, 
-        chat_model=get_gemini()
+        chat_model=get_groq()
     )
     query = "Hola, que productos venden?"
 
-    response = chat_service.get_chain().invoke(query)
+    response = chat_service.chat(query)
     print(response)
