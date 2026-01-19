@@ -17,7 +17,9 @@ class Settings(BaseSettings):
     hugging_face_embeddings_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
     gemini_embeddings_model_name: str = "models/gemini-embedding-001"
 
-    persist_path: Path = BASE_DIR / "faiss_index"
+    persist_path_huggingface: Path = BASE_DIR / "vector_store/huggingface"
+    persist_path_gemini: Path = BASE_DIR / "vector_store/gemini"
+    
     urls: List[str] = [
         "https://hermanos-jota-flame.vercel.app/",
         "https://hermanos-jota-flame.vercel.app/productos",

@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from langserve import add_routes
 from langchain_core.runnables import RunnableLambda
+from app.models.chat_models import ChatQuestion, ChatResponse
 
 from app.embeddings.factory import get_embeddings
 from app.chat_models.factory import get_chat_model
@@ -27,7 +28,7 @@ try:
     data_service = DataIngestionService(embeddings)
     vector_store = data_service.load_vector_store()
 
-    chat_model = get_chat_model(chat_model="gemini")
+    chat_model = get_chat_model(chat_model="groq")
     if chat_model is None:
         raise ValueError("Modelo de chat no soportado.")
     chat_service = ChatService(vector_store, chat_model)
@@ -52,7 +53,16 @@ app.add_middleware(
 )
 
 # SERVIDOR LANGSERVE
-rag = RunnableLambda(lambda q: chat_service.chat(q))
+def rag_chain(input: dict) -> ChatResponse:
+    question = input["question"]
+    response = chat_service.chat(question)
+    return ChatResponse(response=response)
+
+rag = RunnableLambda(rag_chain).with_types(
+    input_type=ChatQuestion,
+    output_type=ChatResponse
+)
+
 add_routes(
     app,
     rag,

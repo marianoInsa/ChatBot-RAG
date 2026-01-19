@@ -1,6 +1,8 @@
 from typing import List
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from app.loaders.loader import load_documents
 from langchain_community.vectorstores import FAISS
@@ -14,6 +16,7 @@ class DataIngestionService:
     def __init__(self, embeddings: Embeddings):
         self.settings = get_settings()
         self._embeddings: Embeddings = embeddings
+        self._persist_path = self._set_persist_path()
         self._text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.settings.chunk_size,
             chunk_overlap=self.settings.chunk_overlap,
@@ -22,12 +25,25 @@ class DataIngestionService:
         )
         self._vector_store = None
 
+    def _set_persist_path(self):
+        if isinstance(self._embeddings, HuggingFaceEmbeddings):
+            return self.settings.persist_path_huggingface
+        elif isinstance(self._embeddings, GoogleGenerativeAIEmbeddings):
+            return self.settings.persist_path_gemini
+        else:
+            logger.error("Tipo de embeddings no soportado para persistencia.")
+            raise ValueError("Tipo de embeddings no soportado para persistencia.")
+
     def load_and_chunk(self) -> List[Document]:
         all_docs = load_documents(self.settings.file_path)
         chunks = self._text_splitter.split_documents(all_docs)
         return all_docs, chunks
 
     def vectorize(self) -> FAISS:
+        if self._persist_path.exists():
+            logger.info("El vector store ya existe.")
+            return self.load_vector_store()
+        
         # CARGA DE DATOS Y CHUNKING
         loaded_docs, chunks = self.load_and_chunk()
         if not loaded_docs:
@@ -43,12 +59,11 @@ class DataIngestionService:
             embedding=self._embeddings,
             ids=ids
         )
-        self._vector_store.save_local(self.settings.persist_path)
-        logger.info("--- VECTOR STORE ---")
-        logger.info(f"Guardado en: {self.settings.persist_path}")
-        logger.info(f"Chunks generados (FAISS index): {self._vector_store.index.ntotal}")
-        logger.info(f"Dimensión de embeddings: {self._vector_store.index.d}")
-        logger.info("--------------------")
+        
+        # PERSISTENCIA
+        self._vector_store.save_local(self._persist_path)
+        
+        self.print_vector_store_info()
 
         if not self._vector_store or self._vector_store.index.ntotal == 0:
             logger.warning("El vector store no se cargó correctamente.")
@@ -56,17 +71,29 @@ class DataIngestionService:
 
         return self._vector_store
 
+    def print_vector_store_info(self):
+        if self._vector_store is None:
+            logger.warning("El vector store no ha sido inicializado.")
+            return
+        logger.info("--- INFORMACIÓN DEL VECTOR STORE ---")
+        logger.info(f"Modelo de Embeddings:\t{type(self._embeddings).__name__}")
+        logger.info(f"Almacenamiento:\t{self._persist_path}")
+        logger.info(f"Índice:\t\t{self._vector_store.index.ntotal}")
+        logger.info(f"Dimensión:\t{self._vector_store.index.d}")
+        logger.info("-------------------------------------")
+
     def load_vector_store(self) -> FAISS:
         if self._vector_store is not None:
             return self._vector_store
-        
-        if self.settings.persist_path.exists():
-            logger.info(f"Cargando vector store desde: {self.settings.persist_path}")
+
+        if self._persist_path.exists():
+            logger.info(f"Cargando vector store desde: {self._persist_path}")
             self._vector_store = FAISS.load_local(
-                self.settings.persist_path,
+                self._persist_path,
                 self._embeddings,
                 allow_dangerous_deserialization=True
             )
+            self.print_vector_store_info()
             return self._vector_store
         
         logger.info("El vector store aún no ha sido creado. Iniciando vectorización...")
@@ -75,9 +102,10 @@ class DataIngestionService:
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
-    from app.embeddings.gemini import get_gemini_embeddings
-    embeddings = get_gemini_embeddings()
-    data_service = DataIngestionService(embeddings=embeddings)
+    # from app.embeddings.gemini import get_gemini_embeddings
+    from app.embeddings.huggingface import hugging_face_embeddings
+    # embeddings = get_gemini_embeddings()
+    data_service = DataIngestionService(embeddings=hugging_face_embeddings)
     vector_store = data_service.vectorize()
     print("--- INFORMACION DEL PIPELINE ---")
     print(f"Fuente de datos          : {data_service.settings.file_path}")
@@ -85,5 +113,5 @@ if __name__ == "__main__":
     print(f"Chunks generados         : {vector_store.index.ntotal}")
     print(f"Tamaño de chunk          : {data_service.settings.chunk_size}")
     print(f"Overlap de chunk         : {data_service.settings.chunk_overlap}")
-    print(f"Modelo de embeddings     : {data_service._embeddings.model}")
+    print(f"Modelo de embeddings     : {data_service._embeddings}")
     print(f"Dimensión de embeddings  : {vector_store.index.d}")

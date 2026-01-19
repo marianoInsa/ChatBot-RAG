@@ -17,9 +17,15 @@ def hacer_request():
     response = requests.post(
         "http://localhost:8000/rag/invoke",
         json={
-            'input': "Hola! Qué es Hermanos Jota?"
-        }
+            "input": {
+                "question": "Hola! ¿Qué es Hermanos Jota?"
+            }
+        },
+        timeout=30
     )
-    print("Respuesta del servidor RAG: ", response.json()['output'])
+
+    print("Status code:", response.status_code)
+    response.raise_for_status()
+    print("Respuesta del servidor:", response.json()["output"]["response"])
 
 hacer_request()
