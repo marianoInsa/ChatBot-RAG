@@ -5,6 +5,7 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_community.vectorstores import FAISS
 from textwrap import dedent
+import re
 import logging
 from app.config.config import get_settings
 
@@ -67,6 +68,11 @@ class ChatService:
         response = self.chat_model.invoke(messages)
         return response.content
     
+    @staticmethod
+    def format_response(response: str) -> str:
+        #eliminar bloques <think>
+        return re.sub(r"<think>.*?</think>", "", response, flags=re.DOTALL).strip()
+    
     def chat(self, question: str) -> str:
         logger.info("Procesando la pregunta...")
         
@@ -80,6 +86,7 @@ class ChatService:
             logger.info("Contexto truncado a la longitud máxima.")
 
         response = self.generate_response(question, context)
+        response = self.format_response(response)
         return response
 
 if __name__ == "__main__":
@@ -88,7 +95,7 @@ if __name__ == "__main__":
     from app.chat_models.groq import get_groq
     from app.chat_models.gemini import get_gemini
     from app.services.data_service import DataIngestionService
-    from app.embeddings.huggingface import hugging_face_embeddings
+    from app.embedding_models.huggingface import hugging_face_embeddings
 
     data_service = DataIngestionService(hugging_face_embeddings)
     vector_store = data_service.load_vector_store()

@@ -1,6 +1,6 @@
 from langchain_core.embeddings import Embeddings
-from app.embeddings.huggingface import hugging_face_embeddings
-from app.embeddings.gemini import get_gemini_embeddings
+from app.embedding_models.huggingface import hugging_face_embeddings
+from app.embedding_models.gemini import get_gemini_embeddings
 import logging
 logger = logging.getLogger(__name__)
 

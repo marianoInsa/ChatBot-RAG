@@ -103,7 +103,7 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
     # from app.embeddings.gemini import get_gemini_embeddings
-    from app.embeddings.huggingface import hugging_face_embeddings
+    from app.embedding_models.huggingface import hugging_face_embeddings
     # embeddings = get_gemini_embeddings()
     data_service = DataIngestionService(embeddings=hugging_face_embeddings)
     vector_store = data_service.vectorize()

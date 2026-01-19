@@ -11,7 +11,7 @@ from app.config.config import get_settings
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-def load_documents(path: str, include_web: bool = False) -> List[Document]:
+def load_documents(path: str, include_web: bool = True) -> List[Document]:
     path = Path(path).resolve()
     all_docs: List[Document] = []
 
