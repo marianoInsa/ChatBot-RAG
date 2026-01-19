@@ -85,5 +85,5 @@ if __name__ == "__main__":
     print(f"Chunks generados         : {vector_store.index.ntotal}")
     print(f"Tamaño de chunk          : {data_service.settings.chunk_size}")
     print(f"Overlap de chunk         : {data_service.settings.chunk_overlap}")
-    print(f"Modelo de embeddings     : {data_service.settings.embeddings_model_name}")
+    print(f"Modelo de embeddings     : {data_service._embeddings.model}")
     print(f"Dimensión de embeddings  : {vector_store.index.d}")

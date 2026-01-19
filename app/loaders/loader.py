@@ -1,124 +1,52 @@
+from pathlib import Path
 from typing import List
 from langchain_core.documents import Document
-from langchain_community.document_loaders import PyMuPDFLoader, SeleniumURLLoader
-from pathlib import Path
 import logging
+
+from app.loaders.pdf import PDFLoader
+from app.loaders.web import WebLoader
+from app.loaders.normalizer import normalize_documents
 from app.config.config import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-def load_pdf_documents(file_path: str) -> List[Document]:
-    docs: List[Document] = []
-    file_path = Path(file_path).resolve()
-
-    logger.info(f"Cargando archivos PDF: {file_path}")
-
-    try:
-        loader = PyMuPDFLoader(str(file_path))
-        loaded_docs = loader.load()
-
-        for doc in loaded_docs:
-            content = (doc.page_content or "").strip()
-            if content:
-                doc.page_content = content
-                doc.metadata["source_type"] = "pdf"
-                docs.append(doc)
-
-        if not docs:
-            logger.warning(f"El archivo PDF no devolvió contenido: {file_path}")
-
-        logger.info(f"Cargadas {len(docs)} páginas del PDF: {file_path}")
-
-    except Exception as e:
-        # archivos corruptos o problemas de lectura
-        logger.error(f"No se pudo cargar el archivo PDF: {file_path} | Error: {e}")
-        return []
-
-    return docs
-
-def load_web_documents() -> List[Document]:
-    docs: List[Document] = []
-
-    urls = settings.urls
-    if not urls or not isinstance(urls, list):
-        logger.warning("No hay URLs configuradas")
-        return []
-    
-    logger.info(f"Cargando documentos web desde: {urls}")
-
-    try:
-        web_loader = SeleniumURLLoader(urls)
-        raw_docs = web_loader.load()
-
-        if not raw_docs:
-            logger.warning(f"El documento web no devolvió contenido")
-
-        for doc in raw_docs:
-            content = (doc.page_content or "").strip()
-
-            if not content:
-                continue
-            
-            doc.page_content = content
-            doc.metadata["source_type"] = "web"
-            docs.append(doc)
-
-    except Exception as e:
-        logger.error(f"Error cargando documentos web. Error: {e}")
-        return []
-
-    logger.info(f"Total de documentos web cargados: {len(docs)}")
-    return docs
-
-def load_documents(path: str) -> List[Document]:
-    all_docs: List[Document] = []
+def load_documents(path: str, include_web: bool = False) -> List[Document]:
     path = Path(path).resolve()
+    all_docs: List[Document] = []
 
-    if path.is_dir():
-        pdf_files = list(path.glob("**/*.pdf"))
+    # CARGA LOCAL
+    logger.info(f"Iniciando carga local desde: {path}")
+    try:
+        if path.exists():
+            if path.is_dir():
+                for pdf in path.glob("**/*.pdf"):
+                    all_docs.extend(PDFLoader(pdf).load())
+            elif path.is_file() and path.suffix.lower() == ".pdf":
+                all_docs.extend(PDFLoader(path).load())
+            else:
+                logger.warning(f"Ruta no soportada: {path}")
+        logger.info(f"Carga local completada. Documentos cargados: {len(all_docs)}")
+    except Exception as e:
+        logger.error(f"Error durante la carga local: {e}")
 
-        for pdf_file in pdf_files:
-            all_docs.extend(load_pdf_documents(pdf_file))
+    # CARGA WEB
+    if include_web and settings.urls:
+        logger.info(f"Iniciando carga Web de {len(settings.urls)} URLs...")
+        try:
+            web_loader = WebLoader(settings.urls)
+            web_docs = web_loader.load()
 
-    elif path.is_file():
-        # cargar un solo archivo
-        if path.suffix.lower() == ".pdf":
-            all_docs.extend(load_pdf_documents(path))
-        else:
-            logger.warning(f"Archivo no soportado: {path}")
+            if web_docs:
+                logger.info(f"Carga web finalizada: {len(web_docs)} documentos obtenidos.")
+                all_docs.extend(web_docs)
+            else:
+                logger.warning("La carga web finalizó sin obtener documentos.")
+        except Exception as e:
+            logger.error(f"Error durante la carga web: {e}")
 
-    else:
-        logger.warning(f"Archivo no soportado o ruta inválida: {path}")
-
-    all_docs.extend(load_web_documents())
-
-    return _normalize_documents(all_docs)
-
-# Normalización final
-def _normalize_documents(docs: List[Document]) -> List[Document]:
-    normalized_docs: List[Document] = []
-
-    for doc in docs:
-        content = (doc.page_content or "").strip()
-
-        if not content:
-            continue
-        
-        normalized_docs.append(
-            Document(
-                page_content=content,
-                metadata={
-                    "title": doc.metadata.get("title", ""),
-                    "source": doc.metadata.get("source"),
-                    "page": doc.metadata.get("page"),
-                    "source_type": doc.metadata.get("source_type")
-                }
-            )
-        )
-
-    return normalized_docs
+    return normalize_documents(all_docs)
 
 if __name__ == "__main__":
-    docs = load_documents("corpus")
-    print(f"Documentos cargados desde 'corpus': {docs}")
+    docs = load_documents("corpus", include_web=True)
+    print(docs)
