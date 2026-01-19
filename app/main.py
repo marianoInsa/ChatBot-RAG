@@ -38,7 +38,7 @@ try:
         raise ValueError("Modelo de chat no soportado.")
     chat_service = ChatService(vector_store, chat_model)
     
-    logger.info("Vector store y LLM cargados correctamente en ChatService.")
+    logger.info("Vector store cargado correctamente en ChatService.")
 except Exception as e:
     logger.error(f"Error al cargar los servicios: {e}")
     raise
@@ -57,6 +57,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# INTERFAZ WEB
+app.mount(
+    "/static",
+    StaticFiles(directory=settings.static_files_path),
+    name="static"
+)
+
+@app.get("/")
+def read_root():
+    try:
+        html_path = settings.static_files_path / "index.html"
+        return FileResponse(html_path)
+    except Exception as e:
+        logger.error(f"Error cargando index.html: {e}")
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat_endpoint(request: ChatQuestion):
+    try:
+        chat_model = get_chat_model(chat_model=request.model_provider)
+        if chat_model is None:
+            raise HTTPException(status_code=400, detail="Modelo de chat no soportado.")
+        chat_service = ChatService(vector_store, chat_model)
+
+        response = chat_service.chat(request.question)
+
+        return ChatResponse(response=response)
+    except Exception as e:
+        logger.error(f"Error en el endpoint de chat: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # SERVIDOR LANGSERVE
 def rag_chain(input: dict) -> ChatResponse:
     question = input["question"]
@@ -73,22 +104,6 @@ add_routes(
     rag,
     path="/rag",
 )
-
-# INTERFAZ WEB
-app.mount(
-    "/static",
-    StaticFiles(directory=settings.static_files_path),
-    name="static"
-)
-
-@app.get("/")
-def read_root():
-    try:
-        html_path = settings.static_files_path / "index.html"
-        return FileResponse(html_path)
-    except Exception as e:
-        logger.error(f"Error cargando index.html: {e}")
-        raise HTTPException(status_code=404, detail="Archivo no encontrado")
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=settings.port, reload=True)
