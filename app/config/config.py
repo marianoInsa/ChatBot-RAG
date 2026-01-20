@@ -7,6 +7,12 @@ from functools import lru_cache
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 class Settings(BaseSettings):
+    ollama_base_url : str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    ollama_model : str = os.getenv("OLLAMA_MODEL", "llama2")
+    
+    groq_model : str = os.getenv("GROQ_MODEL", "qwen/qwen3-32b")
+    google_model : str = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash-lite")
+
     groq_api_key: str = os.getenv("GROQ_API_KEY", "")
     google_api_key: str = os.getenv("GOOGLE_API_KEY", "")
     user_agent: str = os.getenv("USER_AGENT", "ChatBot-RAG")

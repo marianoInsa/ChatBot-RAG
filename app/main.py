@@ -27,13 +27,13 @@ logger = logging.getLogger(__name__)
 
 # INICIALIZACIÓN DE SERVICIOS
 try:
-    embeddings = get_embeddings(embeddings="huggingface")
+    embeddings = get_embeddings()
     if embeddings is None:
         raise ValueError("Modelo de embeddings no soportado.")
     data_service = DataIngestionService(embeddings)
     vector_store = data_service.load_vector_store()
 
-    chat_model = get_chat_model(chat_model="groq")
+    chat_model = get_chat_model()
     if chat_model is None:
         raise ValueError("Modelo de chat no soportado.")
     chat_service = ChatService(vector_store, chat_model)
@@ -76,14 +76,25 @@ def read_root():
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatQuestion):
     try:
-        chat_model = get_chat_model(chat_model=request.model_provider)
+        chat_model = get_chat_model(
+            chat_model=request.model_provider, 
+            user_api_key=request.api_key
+        )
         if chat_model is None:
-            raise HTTPException(status_code=400, detail="Modelo de chat no soportado.")
+            raise HTTPException(
+                status_code=400, 
+                detail=f"No se pudo iniciar {request.model_provider}. Verifique su API Key."
+            )
+        
         chat_service = ChatService(vector_store, chat_model)
 
         response = chat_service.chat(request.question)
 
         return ChatResponse(response=response)
+    
+    except HTTPException as http_exc:
+        raise http_exc
+    
     except Exception as e:
         logger.error(f"Error en el endpoint de chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))

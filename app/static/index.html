@@ -7,26 +7,52 @@
   </head>
   <body>
     <div class="chat-container">
-      <h1>🤖 ChatBot RAG</h1>
+      
+      <div id="config-section">
+        <h1>⚙️ Configura tu ChatBot</h1>
+        
+        <div class="config-group">
+          <label for="model-select">Elige un modelo:</label>
+          <select id="model-select" class="model-selector full-width">
+            <option value="ollama">Ollama</option>
+            <option value="groq">Groq</option>
+            <option value="gemini">Google Gemini</option>
+          </select>
+        </div>
 
-      <div id="chat-box"></div>
+        <div id="api-key-container" class="config-group hidden">
+          <label for="api-key-input">Ingresa tu API Key:</label>
+          <input 
+            type="password" 
+            id="api-key-input" 
+            class="full-width" 
+            placeholder="Ej: gsk_... o AIza..."
+          />
+          <small>En caso de no poseer una API Key, puedes elegir Ollama.</small>
+        </div>
 
-      <div class="controls-container">
-        <select id="model-select" class="model-selector">
-          <option value="groq">Groq</option>
-          <option value="gemini">Google Gemini</option>
-        </select>
+        <button id="start-chat-btn" class="primary-btn">Comenzar a Chatear</button>
       </div>
 
-      <div class="input-container">
-        <input
-          type="text"
-          id="user-input"
-          placeholder="Escribí tu pregunta..."
-          autocomplete="off"
-        />
-        <button id="send-btn">Enviar</button>
+      <div id="chat-section" class="hidden">
+        <div class="chat-header">
+          <h1>🤖 ChatBot RAG</h1>
+          <button id="change-model-btn" class="link-btn">Cambiar de Chat Model</button>
+        </div>
+
+        <div id="chat-box"></div>
+
+        <div class="input-container">
+          <input
+            type="text"
+            id="user-input"
+            placeholder="Escribí tu pregunta..."
+            autocomplete="off"
+          />
+          <button id="send-btn">Enviar</button>
+        </div>
       </div>
+
     </div>
 
     <script src="static/app.js"></script>

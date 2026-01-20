@@ -3,8 +3,8 @@ from typing import Optional, Literal
 
 class ChatQuestion(BaseModel):
     question: str
-    # api_key: Optional[str] = None
-    model_provider: Literal["groq", "gemini"] = "groq"
+    api_key: Optional[str] = None
+    model_provider: Literal["ollama", "groq", "gemini"] = "ollama"
   
 class ChatResponse(BaseModel):
     response: str
