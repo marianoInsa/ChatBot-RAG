@@ -34,9 +34,9 @@ class Settings(BaseSettings):
     ]
     file_path: Path = BASE_DIR / "corpus"
 
-    mmr_k: int = 5
-    mmr_fetch_k: int = 20
-    mmr_lambda_mult: float = 0.5
+    mmr_k: int = 10 # chunks a devolver
+    mmr_fetch_k: int = 30 # chunks candidatos
+    mmr_lambda_mult: float = 0.5 # balance entre similarity y diversity
 
     max_context_length: int = 4000
 

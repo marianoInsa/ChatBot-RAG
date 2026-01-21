@@ -23,9 +23,9 @@ class ChatService:
         return self.vector_store.as_retriever(
             search_type="mmr", # Maximal Marginal Relevance
             search_kwargs={
-                "k": self.settings.mmr_k, # numero de documentos a devolver
-                "fetch_k": self.settings.mmr_fetch_k, # numero de documentos a considerar para MMR
-                "lambda_mult": self.settings.mmr_lambda_mult # 0.5 balancea entre similarity vs diversity
+                "k": self.settings.mmr_k,
+                "fetch_k": self.settings.mmr_fetch_k,
+                "lambda_mult": self.settings.mmr_lambda_mult
             }
         )
     
@@ -104,7 +104,7 @@ if __name__ == "__main__":
         vector_store=vector_store, 
         chat_model=get_groq()
     )
-    query = "Hola, que productos venden?"
+    query = "Hola, cuáles son los productos más vendidos?"
 
     response = chat_service.chat(query)
     print(response)
