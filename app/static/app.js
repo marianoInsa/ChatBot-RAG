@@ -67,6 +67,7 @@ changeModelBtn.addEventListener("click", () => {
   configSection.classList.remove("hidden");
   
   currentApiKey = "";
+  chatBox.innerHTML = "";
   // Dispara el evento para que verifique si hay key guardada
   modelSelect.dispatchEvent(new Event('change'));
 });
