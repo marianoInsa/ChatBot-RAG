@@ -7,7 +7,7 @@ from functools import lru_cache
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 class Settings(BaseSettings):
-    ollama_base_url : str = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
+    ollama_base_url : str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     ollama_model : str = os.getenv("OLLAMA_MODEL", "llama2")
     enable_ollama : bool = os.getenv("ENABLE_OLLAMA", "false").lower() == "true"
     
@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     google_api_key: str = os.getenv("GOOGLE_API_KEY", "")
     user_agent: str = os.getenv("USER_AGENT", "ChatBot-RAG")
     
-    chunk_size: int = 1000
+    chunk_size: int = 400
     chunk_overlap: int = 200
     
     hugging_face_embeddings_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     file_path: Path = BASE_DIR / "corpus"
 
     mmr_k: int = 10 # chunks a devolver
-    mmr_fetch_k: int = 30 # chunks candidatos
+    mmr_fetch_k: int = 50 # chunks candidatos
     mmr_lambda_mult: float = 0.5 # balance entre similarity y diversity
 
     max_context_length: int = 4000

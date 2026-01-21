@@ -45,6 +45,11 @@ class ChatService:
         3. Sé breve y conciso. Evita introducciones largas como "Basado en el contexto...". Ve al grano.
         4. Mantén un tono cordial y servicial.
 
+        Instrucciones de Formato:
+        1. Tu respuesta debe ser TEXTO PLANO PURO.
+        2. PROHIBIDO usar sintaxis Markdown.
+        3. NO uses asteriscos (**negrita**), guiones para listas (- item), ni almohadillas (# títulos).
+
         <context>
         {context}
         </context>
