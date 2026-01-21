@@ -33,12 +33,7 @@ try:
     data_service = DataIngestionService(embeddings)
     vector_store = data_service.load_vector_store()
 
-    chat_model = get_chat_model()
-    if chat_model is None:
-        raise ValueError("Modelo de chat no soportado.")
-    chat_service = ChatService(vector_store, chat_model)
-    
-    logger.info("Vector store cargado correctamente en ChatService.")
+    logger.info("Vector store cargado correctamente.")
 except Exception as e:
     logger.error(f"Error al cargar los servicios: {e}")
     raise
@@ -80,27 +75,27 @@ async def chat_endpoint(request: ChatQuestion):
             status_code=400,
             detail="Ollama sólo está habilitado localmente."
         )
-    
+
     try:
         chat_model = get_chat_model(
-            chat_model=request.model_provider, 
+            chat_model=request.model_provider,
             user_api_key=request.api_key
         )
         if chat_model is None:
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail=f"No se pudo iniciar {request.model_provider}. Verifique su API Key."
             )
-        
+
         chat_service = ChatService(vector_store, chat_model)
 
         response = chat_service.chat(request.question)
 
         return ChatResponse(response=response)
-    
+
     except HTTPException as http_exc:
         raise http_exc
-    
+
     except Exception as e:
         logger.error(f"Error en el endpoint de chat: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -108,6 +103,12 @@ async def chat_endpoint(request: ChatQuestion):
 # SERVIDOR LANGSERVE
 def rag_chain(input: dict) -> ChatResponse:
     question = input["question"]
+    
+    chat_model = get_chat_model()
+    if chat_model is None:
+        raise ValueError("Modelo de chat no soportado.")
+    chat_service = ChatService(vector_store, chat_model)
+
     response = chat_service.chat(question)
     return ChatResponse(response=response)
 
