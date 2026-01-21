@@ -75,6 +75,12 @@ def read_root():
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatQuestion):
+    if request.model_provider == "ollama" and not settings.enable_ollama:
+        raise HTTPException(
+            status_code=400,
+            detail="Ollama sólo está habilitado localmente."
+        )
+    
     try:
         chat_model = get_chat_model(
             chat_model=request.model_provider, 

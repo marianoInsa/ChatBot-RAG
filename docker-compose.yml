@@ -1,0 +1,18 @@
+services:
+  chatbot:
+    image: marianoinsa/chatbot-rag:latest 
+    build: .
+    container_name: chatbot
+    ports:
+      - "8000:8000"
+    environment:
+      - ENABLE_OLLAMA=true
+    depends_on:
+      - ollama
+
+  # Ollama con LLaMa 2 pre-cargado
+  ollama:
+    image: marianoinsa/ollama-llama2:latest
+    container_name: ollama-preloaded
+    ports:
+      - "11434:11434"

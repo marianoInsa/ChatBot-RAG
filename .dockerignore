@@ -1,0 +1,22 @@
+# Git
+.git
+.gitignore
+.github/
+.env
+*.md
+
+# Entorno
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE
+.vscode/
+
+# BD Vectorial (se genera en runtime)
+vector_store/
