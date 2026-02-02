@@ -32,7 +32,7 @@ class DataIngestionService:
             return self.settings.persist_path_gemini
         else:
             logger.error("Tipo de embeddings no soportado para persistencia.")
-            raise ValueError("Tipo de embeddings no soportado para persistencia.")
+            raise
 
     def load_and_chunk(self) -> List[Document]:
         all_docs = load_documents(self.settings.file_path)
@@ -41,8 +41,14 @@ class DataIngestionService:
 
     def vectorize(self) -> FAISS:
         if self._persist_path.exists():
-            logger.info("El vector store ya existe.")
-            return self.load_vector_store()
+            logger.info("Eliminando vector store existente para recrearlo...")
+            
+            # si ya existe se elimina para recrearlo
+            for file in self._persist_path.iterdir():
+                file.unlink()
+            self._persist_path.rmdir()
+            
+            logger.info("Vector store eliminado. Recreando...")
         
         # CARGA DE DATOS Y CHUNKING
         loaded_docs, chunks = self.load_and_chunk()

@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -25,23 +26,32 @@ settings = get_settings()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# INICIALIZACIÓN DE SERVICIOS
-try:
-    embeddings = get_embeddings()
-    if embeddings is None:
-        raise ValueError("Modelo de embeddings no soportado.")
-    data_service = DataIngestionService(embeddings)
-    vector_store = data_service.load_vector_store()
+# variable global para el vector store
+vector_store = None
 
-    logger.info("Vector store cargado correctamente.")
-except Exception as e:
-    logger.error(f"Error al cargar los servicios: {e}")
-    raise
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # INICIALIZACIÓN DE SERVICIOS
+    global vector_store
+    try:
+        embeddings = get_embeddings()
+        if embeddings is None:
+            raise ValueError("Modelo de embeddings no soportado.")
+        data_service = DataIngestionService(embeddings)
+        vector_store = data_service.vectorize()
+
+        logger.info("Vector store cargado correctamente.")
+    except Exception as e:
+        logger.error(f"Error al cargar los servicios: {e}")
+        raise
+    
+    yield
 
 app = FastAPI(
     title="Chatbot RAG Server",
     version="1.0",
-    description="Chatbot RAG usando LangChain"
+    description="Chatbot RAG usando LangChain",
+    lifespan=lifespan
 )
 
 app.add_middleware(
