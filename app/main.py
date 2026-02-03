@@ -111,14 +111,30 @@ async def chat_endpoint(request: ChatQuestion):
         raise HTTPException(status_code=500, detail=str(e))
 
 # SERVIDOR LANGSERVE
-def rag_chain(input: dict) -> ChatResponse:
-    question = input["question"]
-    
-    chat_model = get_chat_model()
+def rag_chain(request: ChatQuestion | dict) -> ChatResponse:
+    if vector_store is None:
+        raise RuntimeError("Vector store no está disponible. Espera a que la aplicación inicie.")
+
+    if isinstance(request, dict):
+        question = request.get("question", "")
+        model_provider = request.get("model_provider", "ollama")
+        api_key = request.get("api_key", "")
+    else:
+        question = request.question
+        model_provider = request.model_provider
+        api_key = request.api_key
+
+    if not question:
+        raise ValueError("No se proporcionó una pregunta.")
+
+    chat_model = get_chat_model(
+        chat_model=model_provider,
+        user_api_key=api_key
+    )
     if chat_model is None:
         raise ValueError("Modelo de chat no soportado.")
-    chat_service = ChatService(vector_store, chat_model)
 
+    chat_service = ChatService(vector_store, chat_model)
     response = chat_service.chat(question)
     return ChatResponse(response=response)
 
