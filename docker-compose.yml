@@ -1,6 +1,6 @@
 services:
   chatbot:
-    image: marianoinsa/chatbot-rag:latest 
+    image: marianoinsa/chatbot-rag:dev
     build: .
     container_name: chatbot
     ports:
