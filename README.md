@@ -125,4 +125,17 @@ docker compose down
 
 ---
 
+# Deployment on Azure Web App for Containers
+
+- **Container image**: The Azure Web App is configured to run the image built by GitHub Actions from this repository.
+- **Image name**: `${DOCKERHUB_USERNAME}/chatbot-rag`, where `DOCKERHUB_USERNAME` is the Docker Hub username stored as a GitHub secret.
+- **Tags**:
+  - `latest`: always points to the most recent successful build from the `main` branch.
+  - Short commit SHA tag (e.g. `abc1234`): allows you to know exactly which commit is deployed and to roll back quickly.
+- **CI/CD flow**:
+  - On every push to `main`, GitHub Actions builds the image from the `Dockerfile`, pushes it to Docker Hub with both tags (`latest` and the short SHA), and then updates the Azure Web App to use the new SHA tag.
+  - Azure Web App for Containers pulls the new tagged image and restarts the container, ensuring that each deployment uses a fresh image version.
+
+---
+
 © 2026 | Made with blood, sweat, and tears by [Mariano Insaurralde](https://www.linkedin.com/in/marianoinsa).
