@@ -1,26 +1,37 @@
-# ChatBot-RAG
+# ChatBot RAG
 
 [![Build and Deploy](https://github.com/marianoInsa/ChatBot-RAG/actions/workflows/main.yml/badge.svg)](https://github.com/marianoInsa/ChatBot-RAG/actions/workflows/main.yml)
+
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-121212?style=for-the-badge&logo=chainlink&logoColor=white)
+![Azure](https://img.shields.io/badge/azure-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
 
 ## Description
 
 The chatbot leverages **LangChain**, **FastAPI**, and a Multi-LLM architecture (**Ollama**, **Groq**, **Gemini**) to answer questions based on web documents and PDF files using RAG (Retrieval-Augmented Generation).
 
-The solution is fully containerized using **Docker**, allowing for seamless hybrid deployment: a lightweight version for **Azure App Service** and a full version with local LLMs (LLaMa 2) for local development. The architecture focuses on modularity, efficient information retrieval using **FAISS**, and "Lazy Loading" strategies for resource optimization.
+The solution is fully containerized using **Docker**, allowing for seamless hybrid deployment: a lightweight version for **Azure App Service** and a full version with local LLMs (LLaMa 2) for local development, with a **Streamlit** interface hosted on **Streamlit Community Cloud**. The architecture focuses on modularity, efficient information retrieval using **FAISS**, and "Lazy Loading" strategies for resource optimization.
 
-- **Live Demo:** [https://chatbot-hermanosjota.azurewebsites.net](https://chatbot-hermanosjota.azurewebsites.net)
+- **UI (Streamlit):** [chatbot-rag-ui.streamlit.app](https://chatbot-rag-ui.streamlit.app/)
+- **API (Azure):** [chatbot-hermanosjota.azurewebsites.net](https://chatbot-hermanosjota.azurewebsites.net)
 
 ## Technologies Used
 
 - **LangChain**: Framework for integrating Large Language Models (LLMs) and building RAG chains.
-- **FastAPI**: High-performance framework for exposing the chatbot's REST API and serving the frontend.
+- **FastAPI**: High-performance framework for exposing the chatbot's REST API.
+- **Streamlit**: Python-native UI framework used for the frontend, hosted on Streamlit Community Cloud.
 - **Ollama**: Local server for hosting the LLaMa 2 model (offline privacy-focused capability).
 - **Groq & Gemini**: Cloud-based LLM providers for high-speed inference in deployed environments.
 - **FAISS**: VectorStore for efficient similarity search and information retrieval.
 - **HuggingFace**: Used for generating embeddings locally.
 - **Docker**: Containerization of services (API + Ollama) for seamless deployment.
 - **GitHub Actions**: CI/CD automation for building and pushing images to Docker Hub and Azure.
-- **Azure App Service**: Cloud platform used for the production deployment (Web App for Containers).
+- **Azure App Service**: Cloud platform used for the API backend deployment (Web App for Containers).
+- **Streamlit Community Cloud**: Free hosting platform for the Streamlit frontend.
 
 ## Key Features
 
@@ -28,7 +39,7 @@ The solution is fully containerized using **Docker**, allowing for seamless hybr
 - **Multi-Model Support**: Users can switch between Ollama (Local), Groq, and Gemini.
 - **Seamless Deployment**: Optimized for both resource-constrained cloud environments and powerful local machines.
 - **Data Ingestion Pipeline**: Automatically loads and indexes data from PDF documents and Web URLs.
-- **Interactive UI**: Includes a web interface to interact with the bot and select models.
+- **Interactive UI**: Streamlit-based interface with sidebar configuration and a full chat experience.
 - **Design Patterns**: Implements the **Factory Pattern** for scalable model integration (dynamic selection of LLMs and Embeddings) and the **Service Layer Pattern** to strictly decouple business logic from the API endpoints.
 
 ## Component Diagram
@@ -41,20 +52,22 @@ The project follows a clean, modular architecture designed for maintainability a
 
 ```text
 ├── app
-│   ├── chat_models          # Factory implementations for LLMs (Groq, Gemini, Ollama)
-│   ├── embedding_models     # Factory implementations for Embeddings (HuggingFace, Gemini)
-│   ├── config               # Configuration settings and environment variable management
-│   ├── loaders              # Strategies for data ingestion (PDF, Web scraping)
-│   ├── models               # Pydantic data models for request/response validation
-│   ├── services             # Core business logic (RAG orchestration, Vectorization)
-│   ├── static               # Frontend assets (HTML, CSS, JS)
-│   └── main.py              # Application entry point (FastAPI)
+│   ├── chat_models          # Factory implementations for LLMs (Groq, Gemini, Ollama)
+│   ├── embedding_models     # Factory implementations for Embeddings (HuggingFace, Gemini)
+│   ├── config               # Configuration settings and environment variable management
+│   ├── loaders              # Strategies for data ingestion (PDF, Web scraping)
+│   ├── models               # Pydantic data models for request/response validation
+│   ├── services             # Core business logic (RAG orchestration, Vectorization)
+│   └── main.py              # FastAPI entry point (API only)
+├── .streamlit
+│   └── config.toml          # Streamlit theme configuration (dark/blue)
 ├── corpus                   # Source documents (PDFs) for the Knowledge Base
 ├── vector_store             # Persistent storage for FAISS vector indices
-├── Dockerfile               # Production image definition (Application)
+├── streamlit_app.py         # Streamlit frontend entry point
+├── Dockerfile               # Production image definition (FastAPI API)
 ├── Dockerfile.ollama        # Custom image definition for Ollama pre-loaded with LLaMa2
 ├── docker-compose.yml       # Orchestration for local development
-└── requirements.txt         # Python dependencies
+└── requirements.txt         # Python dependencies (FastAPI + backend)
 ```
 
 **Detailed Breakdown**
@@ -64,6 +77,28 @@ The project follows a clean, modular architecture designed for maintainability a
 - `app/loaders`: Contains the logic to parse different data sources, normalizing them into a standard format for the vector store.
 - `corpus`: Directory where raw documents (PDFs) are placed to be ingested by the system.
 - `vector_store`: Generated at runtime/build time; stores the FAISS indices to avoid re-calculating embeddings on every restart.
+
+---
+
+# Deployment
+
+## API — Azure Web App for Containers
+
+- **Container image**: The Azure Web App is configured to run the image built by GitHub Actions from this repository.
+- **Image name**: `${DOCKERHUB_USERNAME}/chatbot-rag`, where `DOCKERHUB_USERNAME` is the Docker Hub username stored as a GitHub secret.
+- **Tags**:
+  - `latest`: always points to the most recent successful build from the `main` branch.
+  - Short commit SHA tag (e.g. `abc1234`): allows you to know exactly which commit is deployed and to roll back quickly.
+- **CI/CD flow**:
+  - On every push to `main`, GitHub Actions builds the image from the `Dockerfile`, pushes it to Docker Hub with both tags (`latest` and the short SHA), and then updates the Azure Web App to use the new SHA tag.
+  - Azure Web App for Containers pulls the new tagged image and restarts the container, ensuring that each deployment uses a fresh image version.
+
+## UI — Streamlit Community Cloud
+
+- **Entry point**: `streamlit_app.py`
+- **Live URL**: [https://chatbot-rag-ui.streamlit.app/](https://chatbot-rag-ui.streamlit.app/)
+- **Deploy**: Connected directly to this GitHub repository. Deploys automatically on every push to `main`. No changes to the GitHub Actions workflow required.
+- **Environment variable**: `API_URL = "https://chatbot-hermanosjota.azurewebsites.net"` configured in Streamlit Cloud secrets.
 
 ---
 
@@ -89,11 +124,11 @@ The project follows a clean, modular architecture designed for maintainability a
 docker compose up
 ```
 
-- **Access the Chatbot**: Once the containers are running (look for "Uvicorn running" in logs), access the web interface at URL: [http://localhost:8000](http://localhost:8000)
+- **Access the Chatbot**: Once the containers are running, open the Streamlit UI at [http://localhost:8501](http://localhost:8501). You can also access the API docs at [http://localhost:8000/docs](http://localhost:8000/docs).
 
 ## Test and Verify
 
-Open a browser and navigate to the chatbot URL. You can also access the auto-generated documentation at [http://localhost:8000/docs](http://localhost:8000/docs).
+Open a browser and navigate to the Streamlit UI at [http://localhost:8501](http://localhost:8501). Select a model, enter your API Key if needed, and start chatting. You can also access the FastAPI docs at [http://localhost:8000/docs](http://localhost:8000/docs).
 
 Ask sample questions related to the loaded corpus (e.g., "Hermanos Jota" furniture), such as:
 
@@ -122,19 +157,6 @@ Ask sample questions related to the loaded corpus (e.g., "Hermanos Jota" furnitu
 ```sh
 docker compose down
 ```
-
----
-
-# Deployment on Azure Web App for Containers
-
-- **Container image**: The Azure Web App is configured to run the image built by GitHub Actions from this repository.
-- **Image name**: `${DOCKERHUB_USERNAME}/chatbot-rag`, where `DOCKERHUB_USERNAME` is the Docker Hub username stored as a GitHub secret.
-- **Tags**:
-  - `latest`: always points to the most recent successful build from the `main` branch.
-  - Short commit SHA tag (e.g. `abc1234`): allows you to know exactly which commit is deployed and to roll back quickly.
-- **CI/CD flow**:
-  - On every push to `main`, GitHub Actions builds the image from the `Dockerfile`, pushes it to Docker Hub with both tags (`latest` and the short SHA), and then updates the Azure Web App to use the new SHA tag.
-  - Azure Web App for Containers pulls the new tagged image and restarts the container, ensuring that each deployment uses a fresh image version.
 
 ---
 
