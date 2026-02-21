@@ -11,6 +11,7 @@ faiss-cpu
 
 fastapi
 uvicorn
+python-multipart
 langserve
 sse_starlette
 

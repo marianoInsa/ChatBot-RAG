@@ -88,6 +88,68 @@ class DataIngestionService:
         logger.info(f"Dimensión:\t{self._vector_store.index.d}")
         logger.info("-------------------------------------")
 
+    @staticmethod
+    def create_text_splitter(chunk_size: int, chunk_overlap: int) -> RecursiveCharacterTextSplitter:
+        """Crea un text splitter con la configuración dada."""
+        return RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            add_start_index=True,
+            separators=["\n\n", "\n", " ", ""]
+        )
+
+    @staticmethod
+    def add_documents_to_vector_store(
+        vector_store: FAISS,
+        documents: List[Document],
+        chunk_size: int,
+        chunk_overlap: int,
+    ) -> int:
+        """
+        Añade documentos a un vector store existente.
+        Retorna el número de chunks añadidos.
+        """
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            add_start_index=True,
+            separators=["\n\n", "\n", " ", ""]
+        )
+        chunks = text_splitter.split_documents(documents)
+        if not chunks:
+            return 0
+        ids = [str(uuid4()) for _ in chunks]
+        texts = [c.page_content for c in chunks]
+        metadatas = [c.metadata for c in chunks]
+        vector_store.add_texts(texts, metadatas=metadatas, ids=ids)
+        return len(chunks)
+
+    @staticmethod
+    def create_vector_store_from_documents(
+        documents: List[Document],
+        embeddings: Embeddings,
+        chunk_size: int,
+        chunk_overlap: int,
+    ) -> FAISS:
+        """
+        Crea un nuevo vector store FAISS desde documentos.
+        """
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            add_start_index=True,
+            separators=["\n\n", "\n", " ", ""]
+        )
+        chunks = text_splitter.split_documents(documents)
+        if not chunks:
+            raise ValueError("No se generaron chunks. Verifica que los documentos tengan contenido.")
+        ids = [str(uuid4()) for _ in chunks]
+        return FAISS.from_documents(
+            documents=chunks,
+            embedding=embeddings,
+            ids=ids
+        )
+
     def load_vector_store(self) -> FAISS:
         if self._vector_store is not None:
             return self._vector_store

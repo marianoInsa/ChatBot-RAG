@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     static_files_path: Path = BASE_DIR / "app/static"
     port: int = 8000
 
+    # Caché LRU: número máximo de índices FAISS en RAM
+    vector_store_cache_size: int = int(os.getenv("VECTOR_STORE_CACHE_SIZE", "10"))
+
     model_config = SettingsConfigDict(
         env_file = ".env"
     )
