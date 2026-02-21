@@ -4,8 +4,7 @@ load_dotenv()
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -62,21 +61,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# INTERFAZ WEB
-app.mount(
-    "/static",
-    StaticFiles(directory=settings.static_files_path),
-    name="static"
-)
-
-@app.get("/")
-def read_root():
-    try:
-        html_path = settings.static_files_path / "index.html"
-        return FileResponse(html_path)
-    except Exception as e:
-        logger.error(f"Error cargando index.html: {e}")
-        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+@app.get("/", response_class=JSONResponse)
+def health_check():
+    return {"status": "ok", "service": "ChatBot RAG API"}
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatQuestion):
