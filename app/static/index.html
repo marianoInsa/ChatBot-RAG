@@ -3,81 +3,90 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ChatBot RAG | Hermanos Jota</title>
-    <link rel="stylesheet" href="static/styles.css" />
+    <title>ChatBot RAG API | Admin</title>
+    <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
-    
     <header class="app-header">
       <div class="header-content">
-        <img src="static/logo.svg" alt="Logo Hermanos Jota" class="header-logo">
-        
         <div class="header-info">
-          <h1>Asistente Virtual | Hermanos Jota</h1>
-          <p>
-            Este es un ChatBot con arquitectura RAG, aumentado con documentos internos sobre la mueblería <strong>Hermanos Jota</strong> y la información disponible en su sitio web.
-          </p>
-          <p>Creado por <strong>Mariano Insaurralde</strong></p>
+          <h1>ChatBot RAG API - Panel de Administración</h1>
+          <p>API multi-tenant: registra clientes, carga documentos (PDFs/URLs) y chatea.</p>
           <div class="header-links">
-            <a href="https://hermanos-jota-flame.vercel.app/" target="_blank" rel="noopener noreferrer">🌐 Web de la mueblería "Hermanos Jota"</a>
-            <a href="https://github.com/marianoInsa/ChatBot-RAG" target="_blank" rel="noopener noreferrer">📂 Repo del proyecto ChatBot RAG</a>
+            <a href="/docs" target="_blank" rel="noopener noreferrer">Documentación API</a>
+            <a href="https://github.com/marianoInsa/ChatBot-RAG" target="_blank" rel="noopener noreferrer">Repositorio</a>
           </div>
         </div>
       </div>
     </header>
 
     <main class="app-content">
-      <div class="chat-container">
-        
-        <div id="config-section">
-          <h1>⚙️ Configura tu ChatBot</h1>
-          
+      <div class="admin-container">
+        <nav class="tabs">
+          <button id="tab-register" class="tab-btn active">Registrar Cliente</button>
+          <button id="tab-clients" class="tab-btn">Clientes</button>
+          <button id="tab-upload" class="tab-btn">Cargar Documentos</button>
+          <button id="tab-chat" class="tab-btn">Chat</button>
+        </nav>
+
+        <div id="panel-register" class="panel active">
+          <h2>Registrar nuevo cliente</h2>
+          <p>Obtendrás un <code>client_id</code> para cargar documentos y usar el chat.</p>
+          <button id="register-btn" class="primary-btn">Registrar</button>
+          <div id="register-result" class="result-box hidden"></div>
+        </div>
+
+        <div id="panel-clients" class="panel">
+          <h2>Clientes registrados</h2>
+          <button id="refresh-clients-btn" class="secondary-btn">Actualizar lista</button>
+          <div id="clients-list" class="clients-list"></div>
+        </div>
+
+        <div id="panel-upload" class="panel">
+          <h2>Cargar documentos</h2>
           <div class="config-group">
-            <label for="model-select">Elige un modelo:</label>
+            <label for="upload-client-id">Client ID:</label>
+            <input type="text" id="upload-client-id" class="full-width" placeholder="Pega el client_id aquí" />
+          </div>
+          <div class="config-group">
+            <label for="pdf-files">Archivos PDF (máx. 10):</label>
+            <input type="file" id="pdf-files" accept=".pdf" multiple />
+          </div>
+          <div class="config-group">
+            <label for="urls-input">URLs (una por línea, máx. 20):</label>
+            <textarea id="urls-input" class="full-width" rows="4" placeholder="https://ejemplo.com/pagina1&#10;https://ejemplo.com/pagina2"></textarea>
+          </div>
+          <button id="upload-btn" class="primary-btn">Cargar Documentos</button>
+          <div id="upload-result" class="result-box hidden"></div>
+        </div>
+
+        <div id="panel-chat" class="panel">
+          <h2>Chat</h2>
+          <div class="config-group">
+            <label for="chat-client-id">Client ID:</label>
+            <input type="text" id="chat-client-id" class="full-width" placeholder="Pega el client_id del cliente con documentos cargados" />
+          </div>
+          <div class="config-group">
+            <label for="model-select">Modelo:</label>
             <select id="model-select" class="model-selector full-width">
               <option value="ollama">Ollama</option>
               <option value="groq">Groq</option>
               <option value="gemini">Google Gemini</option>
             </select>
           </div>
-
           <div id="api-key-container" class="config-group hidden">
-            <label for="api-key-input">Ingresa tu API Key:</label>
-            <input 
-              type="password" 
-              id="api-key-input" 
-              class="full-width" 
-              placeholder="Ej: gsk_... o AIza..."
-            />
-            <small>En caso de no poseer una API Key, puedes elegir Ollama.</small>
-            <small>Se guardará en tu navegador para futuras sesiones.</small>
+            <label for="api-key-input">API Key:</label>
+            <input type="password" id="api-key-input" class="full-width" placeholder="gsk_... o AIza..." />
           </div>
-
-          <button id="start-chat-btn" class="primary-btn">Comenzar a Chatear</button>
-        </div>
-
-        <div id="chat-section" class="hidden">
-          <div class="chat-header">
-            <h1>🤖 ChatBot RAG</h1>
-            <button id="change-model-btn" class="link-btn">Cambiar de Chat Model</button>
-          </div>
-
           <div id="chat-box"></div>
-
           <div class="input-container">
-            <input
-              type="text"
-              id="user-input"
-              placeholder="Escribí tu pregunta..."
-              autocomplete="off"
-            />
+            <input type="text" id="user-input" placeholder="Escribe tu pregunta..." autocomplete="off" />
             <button id="send-btn">Enviar</button>
           </div>
         </div>
-
       </div>
     </main>
 
-    <script src="static/app.js"></script>
+    <script src="/static/app.js"></script>
   </body>
 </html>
