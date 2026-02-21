@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Union
 from langchain_core.documents import Document
 import logging
 
@@ -46,6 +46,40 @@ def load_documents(path: str, include_web: bool = True) -> List[Document]:
             logger.error(f"Error durante la carga web: {e}")
 
     return normalize_documents(all_docs)
+
+
+def load_documents_from_sources(
+    pdf_paths: List[Union[Path, str]] | None = None,
+    urls: List[str] | None = None,
+) -> List[Document]:
+    """
+    Carga documentos desde rutas de archivos PDF y/o URLs.
+    Acepta fuentes dinámicas (archivos subidos, URLs proporcionadas por el usuario).
+    """
+    all_docs: List[Document] = []
+
+    if pdf_paths:
+        for path in pdf_paths:
+            path = Path(path).resolve()
+            if path.is_file() and path.suffix.lower() == ".pdf":
+                try:
+                    all_docs.extend(PDFLoader(path).load())
+                except Exception as e:
+                    logger.error(f"Error cargando PDF {path}: {e}")
+
+    if urls:
+        urls = [u.strip() for u in urls if u and u.strip()]
+        if urls:
+            try:
+                web_loader = WebLoader(urls)
+                web_docs = web_loader.load()
+                if web_docs:
+                    all_docs.extend(web_docs)
+            except Exception as e:
+                logger.error(f"Error durante la carga web: {e}")
+
+    return normalize_documents(all_docs)
+
 
 if __name__ == "__main__":
     docs = load_documents("corpus", include_web=True)

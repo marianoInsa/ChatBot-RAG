@@ -119,11 +119,8 @@ class WebLoader(BaseLoader):
         self.urls = urls
 
     def load(self) -> List[Document]:
-        wait_map = {
-            self.urls[0]: (By.TAG_NAME, "body"),
-            self.urls[1]: (By.TAG_NAME, "body"),
-        }
-        
+        wait_map = {url: (By.TAG_NAME, "body") for url in self.urls} if self.urls else {}
+
         loader = SeleniumURLLoaderWithWait(
             urls=self.urls,
             wait_time=20,
