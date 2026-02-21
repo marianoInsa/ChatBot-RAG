@@ -40,7 +40,6 @@ class Settings(BaseSettings):
 
     max_context_length: int = 4000
 
-    static_files_path: Path = BASE_DIR / "app/static"
     port: int = 8000
 
     model_config = SettingsConfigDict(

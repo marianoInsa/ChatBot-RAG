@@ -10,6 +10,17 @@ services:
     depends_on:
       - ollama
 
+  chatbot-ui:
+    build: .
+    container_name: chatbot-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://chatbot:8000
+    command: ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    depends_on:
+      - chatbot
+
   # Ollama con LLaMa 2 pre-cargado
   ollama:
     image: marianoinsa/ollama-llama2:latest

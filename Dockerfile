@@ -27,6 +27,8 @@ RUN python -m pip install --upgrade pip && \
 
 COPY app ./app
 COPY corpus ./corpus
+COPY streamlit_app.py .
+COPY .streamlit ./.streamlit
 
 EXPOSE 8000
 
