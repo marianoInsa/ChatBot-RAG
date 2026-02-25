@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
         if embeddings is None:
             raise ValueError("Modelo de embeddings no soportado.")
         data_service = DataIngestionService(embeddings)
-        vector_store = data_service.vectorize()
+        vector_store = data_service.load_vector_store()
 
         logger.info("Vector store cargado correctamente.")
     except Exception as e:

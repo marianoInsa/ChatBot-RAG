@@ -27,6 +27,7 @@ RUN python -m pip install --upgrade pip && \
 
 COPY app ./app
 COPY corpus ./corpus
+COPY vector_store ./vector_store
 COPY streamlit_app.py .
 COPY .streamlit ./.streamlit
 
