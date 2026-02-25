@@ -17,6 +17,3 @@ __pycache__/
 
 # IDE
 .vscode/
-
-# BD Vectorial (se genera en runtime)
-vector_store/
