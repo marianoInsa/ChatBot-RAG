@@ -3,20 +3,15 @@ FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV CHROME_BIN=/usr/bin/chromium
-ENV CHROME_PATH=/usr/lib/chromium/
 
 WORKDIR /app
 
 # Dependencias del sistema
-# chomium y chromium-driver para el scraping con Selenium
 RUN apt-get update && apt-get install -y \
     build-essential \
     poppler-utils \
     curl \
     wget \
-    chromium \
-    chromium-driver \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
