@@ -59,11 +59,19 @@ The project follows a clean, modular architecture designed for maintainability a
 │   ├── models               # Pydantic data models for request/response validation
 │   ├── services             # Core business logic (RAG orchestration, Vectorization)
 │   └── main.py              # FastAPI entry point (API only)
+├── tests
+│   ├── chat_models          # Unit tests for LLM factories
+│   ├── embedding_models     # Unit tests for Embedding factory
+│   ├── loaders              # Unit tests for data loaders and normalizer
+│   ├── services             # Unit tests for ChatService and DataIngestionService
+│   ├── test_main.py         # Unit tests for FastAPI endpoints and rag_chain
+│   └── conftest.py          # Shared fixtures (mock settings, embeddings, etc.)
 ├── .streamlit
 │   └── config.toml          # Streamlit theme configuration (dark/blue)
 ├── corpus                   # Source documents (PDFs) for the Knowledge Base
 ├── vector_store             # Persistent storage for FAISS vector indices
 ├── streamlit_app.py         # Streamlit frontend entry point
+├── pytest.ini               # PyTest configuration (test paths, coverage, asyncio)
 ├── Dockerfile               # Production image definition (FastAPI API)
 ├── Dockerfile.ollama        # Custom image definition for Ollama pre-loaded with LLaMa2
 ├── docker-compose.yml       # Orchestration for local development
@@ -156,6 +164,47 @@ Ask sample questions related to the loaded corpus (e.g., "Hermanos Jota" furnitu
 
 ```sh
 docker compose down
+```
+
+---
+
+# Testing
+
+## Strategy
+
+The project uses **PyTest** with **pytest-cov** for unit testing and code coverage. All tests are located in the `tests/` directory, mirroring the structure of `app/`:
+
+```text
+tests/
+├── chat_models/          # Tests for LLM factories (Gemini, Groq, Factory)
+├── embedding_models/     # Tests for Embedding factory
+├── loaders/              # Tests for PDF, Web, Normalizer, and Loader
+├── services/             # Tests for DataIngestionService and ChatService
+├── test_main.py          # Tests for FastAPI endpoints and rag_chain
+└── conftest.py           # Shared fixtures (mock settings, embeddings, etc.)
+```
+
+All tests use **mocks** to isolate dependencies (API keys, Selenium, FAISS, LLM providers), so they run fast and don't require any external services or credentials.
+
+## CI/CD Integration
+
+Tests are automatically executed in the **GitHub Actions** pipeline as the first step before building and deploying. If any test fails, the pipeline stops and the deployment is blocked:
+
+```text
+test → build-and-push → deploy
+```
+
+## Running Tests Manually
+
+```sh
+# Run all tests with verbose output
+pytest -v
+
+# Run with coverage report in terminal
+pytest --cov=app --cov-report=term-missing -v
+
+# Generate HTML coverage report (saved to htmlcov/)
+pytest --cov=app --cov-report=html
 ```
 
 ---
