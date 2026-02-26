@@ -2,10 +2,10 @@
 .git
 .gitignore
 .github/
-.env
-*.md
 
 # Entorno
+.env
+.env.example
 venv/
 .venv/
 
@@ -17,3 +17,12 @@ __pycache__/
 
 # IDE
 .vscode/
+
+# Docker
+Dockerfile
+Dockerfile.ollama
+docker-compose.yml
+
+# Docs
+doc/
+*.md

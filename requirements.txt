@@ -17,7 +17,6 @@ sse_starlette
 streamlit
 requests
 
-pypdf
 pymupdf
 selenium
 bs4
