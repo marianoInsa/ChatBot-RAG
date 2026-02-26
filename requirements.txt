@@ -28,3 +28,7 @@ bs4
 torch
 torchvision
 sentence-transformers
+
+pytest
+pytest-cov
+pytest-asyncio
