@@ -122,7 +122,7 @@ The project follows a clean, modular architecture designed for maintainability a
 - **Clone the Repository**: Clone the project repository to your local machine:
 
 ```sh
-  git clone [https://github.com/marianoInsa/ChatBot-RAG.git](https://github.com/marianoInsa/ChatBot-RAG.git)
+  git clone https://github.com/marianoInsa/ChatBot-RAG.git
   cd ChatBot-RAG
 ```
 
@@ -142,23 +142,68 @@ Ask sample questions related to the loaded corpus (e.g., "Hermanos Jota" furnitu
 
 1. _¿Qué productos ofrecen en Hermanos Jota? (What products do you offer at Hermanos Jota?)_
 
-<img src="doc/Q1.png" width="600">
+<table>
+  <tr>
+    <td align="center"><strong>Gemini</strong></td>
+    <td align="center"><strong>Groq</strong></td>
+  </tr>
+  <tr>
+    <td><img src="doc/Q1-Gemini.png" width="450"></td>
+    <td><img src="doc/Q1-Groq.png" width="450"></td>
+  </tr>
+</table>
 
 2. _¿De qué material están hechos sus productos? (What material are your products made of?)_
 
-<img src="doc/Q2.png" width="600">
+<table>
+  <tr>
+    <td align="center"><strong>Gemini</strong></td>
+    <td align="center"><strong>Groq</strong></td>
+  </tr>
+  <tr>
+    <td><img src="doc/Q2-Gemini.png" width="450"></td>
+    <td><img src="doc/Q2-Groq.png" width="450"></td>
+  </tr>
+</table>
 
 3. _¿Cuáles son sus productos disponibles? (What products are available?)_
 
-<img src="doc/Q3.png" width="600">
+<table>
+  <tr>
+    <td align="center"><strong>Gemini</strong></td>
+    <td align="center"><strong>Groq</strong></td>
+  </tr>
+  <tr>
+    <td><img src="doc/Q3-Gemini.png" width="450"></td>
+    <td><img src="doc/Q3-Groq.png" width="450"></td>
+  </tr>
+</table>
 
 4. _¿Hacen envíos a Chaco? (Do you ship to Chaco?)_ _(a province in Argentina)_
 
-<img src="doc/Q4.png" width="600">
+<table>
+  <tr>
+    <td align="center"><strong>Gemini</strong></td>
+    <td align="center"><strong>Groq</strong></td>
+  </tr>
+  <tr>
+    <td><img src="doc/Q4-Gemini.png" width="450"></td>
+    <td><img src="doc/Q4-Groq.png" width="450"></td>
+  </tr>
+</table>
 
 5. _¿Cómo puedo contactarlos y ubicarlos? (How can I contact you and find you?)_
 
-<img src="doc/Q5.png" width="600">
+<table>
+  <tr>
+    <td align="center"><strong>Gemini</strong></td>
+    <td align="center"><strong>Groq</strong></td>
+  </tr>
+  <tr>
+    <td><img src="doc/Q5-Gemini.png" width="450"></td>
+    <td><img src="doc/Q5-Groq.png" width="450"></td>
+  </tr>
+</table>
 
 **Shut Down the Services**: When you're done testing, stop and remove the containers using:
 
