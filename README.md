@@ -4,6 +4,7 @@
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+![Pytest](https://img.shields.io/badge/pytest-009791?style=for-the-badge&logo=pytest&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-121212?style=for-the-badge&logo=chainlink&logoColor=white)
@@ -23,6 +24,7 @@ The solution is fully containerized using **Docker**, allowing for seamless hybr
 
 - **LangChain**: Framework for integrating Large Language Models (LLMs) and building RAG chains.
 - **FastAPI**: High-performance framework for exposing the chatbot's REST API.
+- **Pytest**: Framework for testing the application.
 - **Streamlit**: Python-native UI framework used for the frontend, hosted on Streamlit Community Cloud.
 - **Ollama**: Local server for hosting the LLaMa 2 model (offline privacy-focused capability).
 - **Groq & Gemini**: Cloud-based LLM providers for high-speed inference in deployed environments.
@@ -41,6 +43,7 @@ The solution is fully containerized using **Docker**, allowing for seamless hybr
 - **Data Ingestion Pipeline**: Automatically loads and indexes data from PDF documents and Web URLs.
 - **Interactive UI**: Streamlit-based interface with sidebar configuration and a full chat experience.
 - **Design Patterns**: Implements the **Factory Pattern** for scalable model integration (dynamic selection of LLMs and Embeddings) and the **Service Layer Pattern** to strictly decouple business logic from the API endpoints.
+- **CI/CD Pipeline**: Automated testing, building and deploying the application using GitHub Actions.
 
 ## Component Diagram
 
@@ -51,6 +54,9 @@ The solution is fully containerized using **Docker**, allowing for seamless hybr
 The project follows a clean, modular architecture designed for maintainability and scalability:
 
 ```text
+├── .github
+│   └── workflows
+│       └── main.yml         # GitHub Actions workflow for testing, building and deploying the application
 ├── app
 │   ├── chat_models          # Factory implementations for LLMs (Groq, Gemini, Ollama)
 │   ├── embedding_models     # Factory implementations for Embeddings (HuggingFace, Gemini)
@@ -59,13 +65,7 @@ The project follows a clean, modular architecture designed for maintainability a
 │   ├── models               # Pydantic data models for request/response validation
 │   ├── services             # Core business logic (RAG orchestration, Vectorization)
 │   └── main.py              # FastAPI entry point (API only)
-├── tests
-│   ├── chat_models          # Unit tests for LLM factories
-│   ├── embedding_models     # Unit tests for Embedding factory
-│   ├── loaders              # Unit tests for data loaders and normalizer
-│   ├── services             # Unit tests for ChatService and DataIngestionService
-│   ├── test_main.py         # Unit tests for FastAPI endpoints and rag_chain
-│   └── conftest.py          # Shared fixtures (mock settings, embeddings, etc.)
+├── tests                    # Unit tests for the application
 ├── .streamlit
 │   └── config.toml          # Streamlit theme configuration (dark/blue)
 ├── corpus                   # Source documents (PDFs) for the Knowledge Base
